@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="grid">
+  {% if not current_user %}
+  <div class="panel callout">
+    <h2>Welcome to StudyMate</h2>
+    <p>Create an account to save your subjects, tasks, and progress.</p>
+    <div class="callout-actions">
+      <a class="button" href="{{ url_for('signup') }}">Get started</a>
+      <a class="ghost" href="{{ url_for('login') }}">I already have an account</a>
+    </div>
+  </div>
+  {% else %}
+  <div class="panel">
+    <div class="panel-header">
+      <div>
+        <h2>Subjects</h2>
+        <p>Keep your plan clean and easy to scan.</p>
+      </div>
+      <span class="pill">{{ subjects|length }} active</span>
+    </div>
+
+    <form class="form" method="post" action="{{ url_for('add_subject') }}">
+      <div class="field">
+        <label for="subject-name">Subject name</label>
+        <input id="subject-name" name="name" type="text" placeholder="Calculus" required />
+      </div>
+      <div class="field">
+        <label for="subject-hours">Target hours</label>
+        <input id="subject-hours" name="target_hours" type="number" min="0" value="0" />
+      </div>
+      <div class="field">
+        <label for="subject-color">Color</label>
+        <input id="subject-color" name="color" type="color" value="#2f6fed" />
+      </div>
+      <button type="submit">Add subject</button>
+    </form>
+
+    <div class="subject-list">
+      {% for subject in subjects %}
+      <article class="subject-card" style="--accent: {{ subject.color }}">
+        <div class="subject-header">
+          <h3>{{ subject.name }}</h3>
+          <form method="post" action="{{ url_for('delete_subject', subject_id=subject.id) }}">
+            <button class="ghost" type="submit">Remove</button>
+          </form>
+        </div>
+        <p class="meta">Target hours: {{ subject.target_hours }}</p>
+        {% set total = subject.task_total or 0 %}
+        {% set done = subject.task_done or 0 %}
+        {% set percent = (done / total * 100) | round(0, 'floor') if total else 0 %}
+        <div class="progress-bar muted">
+          <span style="width: {{ percent }}%"></span>
+        </div>
+        <div class="subject-footer">
+          <span>{{ done }} of {{ total }} tasks</span>
+          <strong>{{ percent }}%</strong>
+        </div>
+      </article>
+      {% else %}
+      <p class="empty">Add your first subject to get started.</p>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% if current_user %}
+  <div class="panel">
+    <div class="panel-header">
+      <div>
+        <h2>Tasks</h2>
+        <p>Small wins stack into big progress.</p>
+      </div>
+      <span class="pill">{{ tasks|length }} total</span>
+    </div>
+
+    <form class="form" method="post" action="{{ url_for('add_task') }}">
+      <div class="field">
+        <label for="task-title">Task title</label>
+        <input id="task-title" name="title" type="text" placeholder="Review lecture notes" required />
+      </div>
+      <div class="field">
+        <label for="task-subject">Subject</label>
+        <select id="task-subject" name="subject_id" required>
+          <option value="" disabled selected>Select subject</option>
+          {% for subject in subjects %}
+          <option value="{{ subject.id }}">{{ subject.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label for="task-due">Due date</label>
+        <input id="task-due" name="due_date" type="date" />
+      </div>
+      <div class="field">
+        <label for="task-minutes">Est. minutes</label>
+        <input id="task-minutes" name="est_minutes" type="number" min="5" value="30" />
+      </div>
+      <button type="submit">Add task</button>
+    </form>
+
+    <div class="task-list">
+      {% for task in tasks %}
+      <article class="task-card {{ 'done' if task.status == 'done' }}">
+        <div class="task-main">
+          <div>
+            <div class="task-title">{{ task.title }}</div>
+            <div class="task-meta">
+              <span class="dot" style="--accent: {{ task.subject_color }}"></span>
+              <span>{{ task.subject_name }}</span>
+              {% if task.due_date %}
+              <span>Due {{ task.due_date }}</span>
+              {% endif %}
+              <span>{{ task.est_minutes }} min</span>
+            </div>
+          </div>
+          <div class="task-actions">
+            <form method="post" action="{{ url_for('toggle_task', task_id=task.id) }}">
+              <button class="ghost" type="submit">
+                {{ 'Mark active' if task.status == 'done' else 'Complete' }}
+              </button>
+            </form>
+            <form method="post" action="{{ url_for('delete_task', task_id=task.id) }}">
+              <button class="ghost danger" type="submit">Delete</button>
+            </form>
+          </div>
+        </div>
+      </article>
+      {% else %}
+      <p class="empty">Add a task to start tracking progress.</p>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

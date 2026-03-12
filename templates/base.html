@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>StudyMate Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
+  </head>
+  <body>
+    <div class="page">
+      <nav class="topbar">
+        <div class="brand">StudyMate</div>
+        <div class="auth">
+          {% if current_user %}
+          <span class="user">Hi, {{ current_user.name }}</span>
+          <form method="post" action="{{ url_for('logout') }}">
+            <button class="ghost" type="submit">Log out</button>
+          </form>
+          {% else %}
+          <a class="ghost" href="{{ url_for('login') }}">Log in</a>
+          <a class="button" href="{{ url_for('signup') }}">Sign up</a>
+          {% endif %}
+        </div>
+      </nav>
+      <header class="hero">
+        <div>
+          <p class="eyebrow">StudyMate Dashboard</p>
+          <h1>Plan your subjects. Track every study win.</h1>
+          <p class="subhead">
+            A focused planner that keeps coursework visible and progress measurable.
+          </p>
+        </div>
+        <div class="hero-card">
+          <div class="progress">
+            <div class="progress-header">
+              <span>Overall progress</span>
+              <strong>{{ overall_percent }}%</strong>
+            </div>
+            <div class="progress-bar">
+              <span style="width: {{ overall_percent }}%"></span>
+            </div>
+            <p>
+              {{ overall_done }} of {{ overall_total }} tasks completed
+            </p>
+          </div>
+        </div>
+      </header>
+
+      {% block content %}{% endblock %}
+    </div>
+  </body>
+</html>
